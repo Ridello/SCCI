@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCCI — Internal Platform</title>
+<link rel="icon" type="image/png" href="https://ridello.github.io/Schools-Computer-C-lub-Initiative/images/logo.png" />
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --bg:#050505; --surface:#101012; --surface-2:#161618; --border:rgba(255,255,255,.13);
+  --text:#ffffff; --text-soft:#b8b8b8; --text-dim:#7a7a7a;
+  --blue:#3b82f6; --violet:#7c3aed; --red:#c81e2b; --green:#22c55e; --amber:#f0b84d;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg); scroll-behavior:smooth; overflow-x:hidden;}
+body{margin:0; background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; overflow-x:hidden;}
+h1,h2,h3,h4{margin:0; font-family:'Space Grotesk',sans-serif;}
+a{color:inherit; text-decoration:none;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+button{font-family:inherit; cursor:pointer;}
+input,select,textarea{font-family:inherit; background:var(--surface-2); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:10px 12px; font-size:14px; width:100%;}
+input:focus,select:focus,textarea:focus{outline:none; border-color:var(--blue);}
+label{display:block; font-size:12px; color:var(--text-soft); margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em;}
+.field{margin-bottom:16px;}
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15); border-radius:8px;}
+
+/* ---- buttons / badges ---- */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; border-radius:999px; padding:10px 20px; font-size:13px; font-weight:600; border:none; transition:all .2s; white-space:nowrap;}
+.btn-solid{background:linear-gradient(180deg, #4a90f7, var(--blue)); color:#fff; box-shadow:0 8px 20px -8px rgba(59,130,246,.6), inset 0 1px 0 rgba(255,255,255,.25);}
+.btn-solid:hover{box-shadow:0 10px 24px -6px rgba(59,130,246,.7), inset 0 1px 0 rgba(255,255,255,.25); filter:brightness(1.08);}
+.btn-outline{background:transparent; border:1px solid var(--border); color:var(--text);}
+.btn-outline:hover{border-color:rgba(255,255,255,.35);}
+.btn-danger{background:rgba(200,30,43,.15); color:#ff8b8b; border:1px solid rgba(200,30,43,.35);}
+.btn-danger:hover{background:rgba(200,30,43,.28);}
+.btn-ghost{background:transparent; color:var(--text-soft); padding:8px 12px;}
+.btn-ghost:hover{color:var(--text);}
+.btn-sm{padding:7px 14px; font-size:12px;}
+.btn:disabled{opacity:.4; cursor:not-allowed;}
+.badge{display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; padding:4px 10px; border-radius:999px;}
+.badge-amber{background:rgba(240,184,77,.15); color:var(--amber);}
+.badge-green{background:rgba(34,197,94,.15); color:var(--green);}
+.badge-red{background:rgba(200,30,43,.18); color:#ff8b8b;}
+.badge-blue{background:rgba(59,130,246,.15); color:#7fb1ff;}
+.badge-gray{background:rgba(255,255,255,.08); color:var(--text-soft);}
+
+/* ---- card / surface ---- */
+.card{background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:20px; margin-top:16px; box-shadow:0 20px 40px -28px rgba(0,0,0,.6); position:relative;}
+.card::before{content:''; position:absolute; inset:0; border-radius:inherit; padding:1px; background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0) 40%); -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none;}
+.section-head + .card, .content > .card:first-child{margin-top:0;}
+.stat-card{background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; min-width:0; box-shadow:0 16px 32px -24px rgba(0,0,0,.6);}
+.stat-card .n{font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; overflow-wrap:anywhere;}
+.stat-card .l{font-size:12px; color:var(--text-soft); margin-top:4px;}
+.grid{display:grid; gap:16px;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-2{grid-template-columns:1fr 1fr;}
+@media (max-width:900px){ .grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:1fr 1fr;} .grid-2{grid-template-columns:1fr;} }
+@media (max-width:560px){ .grid-4{grid-template-columns:1fr 1fr;} }
+
+table{width:100%; border-collapse:collapse; font-size:14px;}
+th{text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-dim); padding:10px 12px; border-bottom:1px solid var(--border);}
+td{padding:12px; border-bottom:1px solid rgba(255,255,255,.06); vertical-align:middle; overflow-wrap:anywhere;}
+tr > *:first-child{padding-left:16px;}
+tr > *:last-child{padding-right:16px;}
+tr:last-child td{border-bottom:none;}
+.table-wrap{overflow-x:auto;}
+.empty-state{padding:40px 20px; text-align:center; color:var(--text-dim); font-size:14px;}
+
+/* ---- top public bar ---- */
+.pub-topbar{position:sticky; top:0; z-index:40; background:rgba(5,5,5,.85); backdrop-filter:blur(14px); border-bottom:1px solid var(--border);}
+.pub-topbar-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:14px 20px;}
+.pub-logo{display:flex; align-items:center; gap:8px; font-weight:700; font-size:15px;}
+.pub-logo img{width:28px; height:28px;}
+.pub-actions{display:flex; gap:10px; align-items:center;}
+.back-link{font-size:13px; color:var(--text-soft);}
+.back-link:hover{color:var(--text);}
+
+/* ---- portal / auth pages ---- */
+.auth-shell{min-height:calc(100vh - 64px); display:flex; align-items:center; justify-content:center; padding:40px 20px;}
+.auth-box{width:100%; max-width:480px;}
+.auth-box h1{font-size:28px; margin-bottom:8px;}
+.auth-box p.sub{color:var(--text-soft); font-size:14px; margin-bottom:28px;}
+.role-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;}
+.role-tile{border:1px solid var(--border); background:var(--surface); border-radius:16px; padding:16px; text-align:left; color:var(--text);}
+.role-tile.active{border-color:var(--blue); background:rgba(59,130,246,.08);}
+.role-tile b{display:block; font-size:14px; margin-bottom:2px;}
+.role-tile span{font-size:12px; color:var(--text-soft);}
+.account-tile{width:100%; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:12px; text-align:left; color:var(--text); background:var(--surface-2); border:1px solid var(--border); border-radius:14px; padding:14px 16px; font-size:14px; transition:border-color .15s, background .15s, transform .1s;}
+.account-tile:hover{border-color:var(--blue); background:rgba(59,130,246,.1); transform:translateY(-1px);}
+.account-tile:active{transform:translateY(0);}
+.account-tile-cta{font-size:12px; font-weight:700; color:var(--blue); white-space:nowrap; flex-shrink:0;}
+.account-tile > span:first-child{min-width:0; overflow:hidden;}
+.account-tile > span:first-child b{overflow-wrap:anywhere;}
+.account-tile > span:first-child span{overflow-wrap:anywhere; word-break:break-word;}
+.tabs{display:flex; gap:4px; background:var(--surface-2); border-radius:12px; padding:4px; margin-bottom:24px;}
+.tab-btn{flex:1; border:none; background:transparent; color:var(--text-soft); padding:9px; border-radius:9px; font-size:13px; font-weight:600;}
+.tab-btn.active{background:var(--surface); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.notice{border-radius:12px; padding:12px 14px; font-size:13px; margin-bottom:16px; border:1px solid;}
+.notice-info{background:rgba(59,130,246,.08); border-color:rgba(59,130,246,.3); color:#bcd6ff;}
+.notice-warn{background:rgba(240,184,77,.08); border-color:rgba(240,184,77,.3); color:#ffe3ad;}
+.notice-success{background:rgba(34,197,94,.08); border-color:rgba(34,197,94,.3); color:#b8f0cd;}
+
+/* ---- portal home ---- */
+.portal-hero{max-width:900px; margin:0 auto; padding:60px 20px; text-align:center;}
+.portal-hero h1{font-size:36px; margin-bottom:12px;}
+.portal-hero p{color:var(--text-soft); max-width:560px; margin:0 auto 32px;}
+.portal-cards{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; max-width:900px; margin:0 auto; padding:0 20px 60px;}
+@media (max-width:760px){ .portal-cards{grid-template-columns:1fr;} }
+.portal-card{background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:24px; text-align:left;}
+.portal-card h3{font-size:17px; margin-bottom:8px;}
+.portal-card p{color:var(--text-soft); font-size:13px; line-height:1.5; margin-bottom:16px;}
+
+/* ---- app shell (dashboards) ---- */
+.app-shell{display:flex; min-height:100vh;}
+.sidebar{width:240px; flex-shrink:0; background:var(--surface); border-right:1px solid var(--border); padding:20px 14px; position:sticky; top:0; height:100vh; overflow-y:auto;}
+.sidebar .pub-logo{padding:0 8px; margin-bottom:24px;}
+.side-role{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); padding:0 8px; margin-bottom:8px;}
+.side-link{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; font-size:14px; color:var(--text-soft); margin-bottom:2px;}
+.side-link:hover{background:rgba(15,15,20,.05); color:var(--text);}
+.side-link.active{background:rgba(37,99,235,.1); color:var(--blue); font-weight:600;}
+.side-link .dot{width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.6;}
+.side-foot{margin-top:20px; padding-top:16px; border-top:1px solid var(--border);}
+.main{flex:1; min-width:0;}
+.topbar{position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 24px; background:rgba(5,5,5,.85); backdrop-filter:blur(14px); border-bottom:1px solid var(--border);}
+.topbar h2{font-size:18px; min-width:0; overflow-wrap:anywhere;}
+.content{padding:24px; max-width:1200px; min-width:0;}
+.section-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; flex-wrap:wrap;}
+.section-head h2{font-size:20px;}
+.section-head p{color:var(--text-soft); font-size:13px; margin-top:4px;}
+
+@media (max-width:860px){
+  .app-shell{flex-direction:column;}
+  .sidebar{width:100%; height:auto; position:relative; display:flex; overflow-x:auto; gap:2px; padding:10px 12px; border-right:none; border-bottom:1px solid var(--border);}
+  .sidebar .pub-logo, .side-role, .side-foot{display:none;}
+  .side-link{flex-shrink:0; white-space:nowrap;}
+}
+
+/* notification bell */
+.bell-wrap{position:relative;}
+.bell-btn{position:relative; width:38px; height:38px; border-radius:10px; border:1px solid var(--border); background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--text);}
+.bell-count{position:absolute; top:-4px; right:-4px; background:var(--red); color:#fff; font-size:10px; font-weight:700; min-width:16px; height:16px; border-radius:999px; display:flex; align-items:center; justify-content:center; padding:0 4px;}
+.bell-dropdown{position:absolute; right:0; top:46px; width:320px; max-height:400px; overflow-y:auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:0 20px 50px rgba(0,0,0,.5); z-index:50; display:none;}
+@media (max-width:480px){ .bell-dropdown{ position:fixed; left:12px; right:12px; top:64px; width:auto; max-height:60vh; } }
+.bell-dropdown.open{display:block;}
+.notif-item{padding:12px 14px; border-bottom:1px solid rgba(255,255,255,.06); font-size:13px; overflow-wrap:anywhere;}
+.notif-item:last-child{border-bottom:none;}
+.notif-item.unread{background:rgba(59,130,246,.06);}
+.notif-item .t{color:var(--text-dim); font-size:11px; margin-top:4px;}
+
+/* modal */
+.modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); z-index:100; display:none; align-items:center; justify-content:center; padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:24px; width:100%; max-width:520px; max-height:88vh; overflow-y:auto;}
+.modal-box h3{margin-bottom:16px;}
+.modal-foot{display:flex; justify-content:flex-end; gap:10px; margin-top:20px;}
+
+/* toast */
+#toastHost{position:fixed; bottom:20px; right:20px; z-index:200; display:flex; flex-direction:column; gap:10px;}
+.toast{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 16px; font-size:13px; box-shadow:0 10px 30px rgba(0,0,0,.4); max-width:320px; animation:toastIn .25s ease;}
+@keyframes toastIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+.avatar{width:34px; height:34px; border-radius:999px; background:linear-gradient(to bottom right,var(--blue),var(--violet)); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;}
+.help-note{font-size:12px; color:var(--text-dim); margin-top:6px; line-height:1.5; overflow-wrap:anywhere;}
+.divider{height:1px; background:var(--border); margin:20px 0;}
+.kv{display:flex; justify-content:space-between; gap:12px; padding:8px 0; font-size:13px; border-bottom:1px solid rgba(255,255,255,.06);}
+.kv:last-child{border-bottom:none;}
+.kv span:first-child{color:var(--text-soft); flex-shrink:0;}
+.kv span:last-child{text-align:right; overflow-wrap:anywhere; min-width:0;}
+</style>
+</head>
+<body>
+
+<div id="toastHost"></div>
+<div class="modal-overlay" id="modalOverlay"><div class="modal-box" id="modalBox"></div></div>
+<div id="app"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =========================================================================
+   SCCI STAGE 2 — INTERNAL OPERATIONS & DIGITAL ECOSYSTEM
+   -------------------------------------------------------------------------
+   THIS FILE IS A FRONTEND SCAFFOLD, NOT A PRODUCTION BACKEND.
+   It runs entirely in the browser and uses localStorage as a stand-in
+   database so the whole system is genuinely interactive and viewable
+   right now, with no server. Every data function below is written and
+   named the way a real API call would be (api*, async, single source of
+   truth in `DB`) specifically so it can be swapped for real fetch()
+   calls to a real backend later without changing any page/component code.
+
+   BEFORE THIS GOES LIVE FOR REAL SCCI USE, THE FOLLOWING MUST BE REPLACED:
+   1. AUTH      — localStorage session -> real auth provider (e.g. Supabase
+                  Auth, Firebase Auth, Auth0) with hashed passwords, email
+                  verification, and server-side session/JWT validation.
+   2. DATABASE  — localStorage `DB` object -> real database (e.g. Postgres
+                  via Supabase, or any managed SQL/NoSQL store), accessed
+                  only through authenticated API routes.
+   3. FILES     — Resources below store small demo files as base64 in
+                  localStorage. In production, swap for real object storage
+                  (e.g. Supabase Storage / S3) with signed URLs and
+                  server-side access control, not client-side checks.
+   4. WHATSAPP  — `queueWhatsAppNotification()` currently only logs and
+                  stores a "queued" record. Replace with a real WhatsApp
+                  Business API / provider (e.g. Meta Cloud API, Twilio)
+                  call from a server-side function once credentials exist.
+   5. PAYMENTS  — Wallet balances are internal ledger records only. Bank
+                  withdrawal requests move through a status machine but no
+                  money moves. Replace `processWithdrawal()` with a real
+                  Nigerian payment/payout provider (e.g. Paystack Transfers,
+                  Flutterwave) integration, server-side, before enabling it.
+   ========================================================================= */
+
+const LOGO = "https://ridello.github.io/Schools-Computer-C-lub-Initiative/images/logo.png";
+const PUBLIC_SITE = "https://ridello.github.io/Schools-Computer-C-lub-Initiative/";
+const SUPABASE_URL = "https://qnasjflifrdllwicrfdg.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_VixtRQE67H9okiiBWwCsNg_FEQzuPAv";
+
+const scciSupabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
+  }
+);
+
+console.log("SCCI Supabase client initialized:", scciSupabase);
+
+// Simple client-side password hashing so plaintext passwords are never
+// stored, even in this pre-backend demo. This is NOT a substitute for
+// real server-side auth — see the production notes above — but it means
+// this local build behaves like a real login instead of a fake picker.
+async function hashPassword(pw){
+  try {
+    if(window.crypto && crypto.subtle){
+      const enc = new TextEncoder().encode(pw);
+      const buf = await crypto.subtle.digest("SHA-256", enc);
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+    }
+  } catch(e){ console.warn("SubtleCrypto unavailable, using fallback hash.", e); }
+  let h = 0;
+  for(let i=0;i<pw.length;i++){ h = (Math.imul(31,h) + pw.charCodeAt(i)) | 0; }
+  return "fnv_" + Math.abs(h).toString(16);
+}
+
+/* ---------------------------- DATA LAYER -------------------------------- */
+const STORE_KEY = "scci_ops_db_v2"; // bumped: v1 data predates password-based login
+
+// Some preview/sandboxed contexts block localStorage entirely (it throws on
+// access rather than just being empty). If that happens, fall back to a
+// plain in-memory object so the app keeps working for the session instead
+// of silently breaking every button that touches data.
+let memoryFallback = null;
+function safeStorage(){
+  try {
+    const testKey = "__scci_probe__";
+    localStorage.setItem(testKey, "1");
+    localStorage.removeItem(testKey);
+    return localStorage;
+  } catch(e){
+    console.warn("localStorage unavailable — using in-memory storage for this session only.", e);
+    if(!memoryFallback) memoryFallback = {};
+    return {
+      getItem:(k)=> (k in memoryFallback ? memoryFallback[k] : null),
+      setItem:(k,v)=> { memoryFallback[k] = v; },
+      removeItem:(k)=> { delete memoryFallback[k]; },
+    };
+  }
+}
+const storage = safeStorage();
+
+const DB_ARRAY_FIELDS = ["users","employees","managerApplications","schools","schoolRequests","assignments","tasks","resources","notifications","attendance","reports","walletTxns","withdrawalRequests","whatsappQueue","activityLog"];
+function normalizeDB(db){
+  DB_ARRAY_FIELDS.forEach(f => { if(!Array.isArray(db[f])) db[f] = []; });
+  if(db.session === undefined) db.session = null;
+  return db;
+}
+async function loadDB(){
+  try {
+    const raw = storage.getItem(STORE_KEY);
+    if(raw) return normalizeDB(JSON.parse(raw));
+  } catch(e){ console.warn("Could not read saved data, starting fresh.", e); }
+  const seeded = await seedDB();
+  try { storage.setItem(STORE_KEY, JSON.stringify(seeded)); } catch(e){ console.warn("Could not persist seed data.", e); }
+  return seeded;
+}
+function saveDB(db){
+  try { storage.setItem(STORE_KEY, JSON.stringify(db)); }
+  catch(e){ console.warn("Could not save changes — they will not survive a reload in this environment.", e); }
+}
+function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
+function nowISO(){ return new Date().toISOString(); }
+function fmtDate(iso){ if(!iso) return "—"; const d = new Date(iso); return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}); }
+function fmtDateTime(iso){ if(!iso) return "—"; const d = new Date(iso); return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + ' · ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
+
+const DEMO_PASSWORD = "Scci2026!";
+async function seedDB(){
+  const managerUserId = uid("user");
+  const adminUserId = uid("user");
+  const empUser1 = uid("user"), empUser2 = uid("user"), empUser3 = uid("user");
+  const schoolUserId = uid("user");
+  const emp1 = uid("emp"), emp2 = uid("emp"), emp3 = uid("emp");
+  const school1 = uid("school");
+  const demoHash = await hashPassword(DEMO_PASSWORD);
+
+  return {
+    users: [
+      { id: adminUserId, role:"admin", name:"Ridello Adeyemi", email:"admin@scci.org.ng", status:"active", passwordHash: demoHash, createdAt: nowISO() },
+      { id: managerUserId, role:"manager", name:"Funmi Okoro", email:"manager@scci.org.ng", status:"active", passwordHash: demoHash, createdAt: nowISO() },
+      { id: empUser1, role:"employee", name:"John Doe", email:"john@scci.org.ng", status:"active", passwordHash: demoHash, employeeId: emp1, createdAt: nowISO() },
+      { id: empUser2, role:"employee", name:"Amaka Nwosu", email:"amaka@scci.org.ng", status:"active", passwordHash: demoHash, employeeId: emp2, createdAt: nowISO() },
+      { id: empUser3, role:"employee", name:"Tunde Bakare", email:"tunde@scci.org.ng", status:"applicant", passwordHash: demoHash, employeeId: emp3, createdAt: nowISO() },
+      { id: schoolUserId, role:"school", name:"Bright Future Academy", email:"admin@brightfuture.sch.ng", status:"active", passwordHash: demoHash, schoolId: school1, createdAt: nowISO() },
+    ],
+    employees: [
+      { id: emp1, userId: empUser1, name:"John Doe", email:"john@scci.org.ng", phone:"08031234567", location:"Lagos", skills:["Python","Robotics"], availability:"Weekdays", status:"active", appliedAt: nowISO() },
+      { id: emp2, userId: empUser2, name:"Amaka Nwosu", email:"amaka@scci.org.ng", phone:"08059876543", location:"Ogun State", skills:["Scratch","AI Basics"], availability:"Weekends", status:"active", appliedAt: nowISO() },
+      { id: emp3, userId: empUser3, name:"Tunde Bakare", email:"tunde@scci.org.ng", phone:"08123456789", location:"Lagos", skills:["Robotics","Electronics"], availability:"Flexible", status:"applicant", appliedAt: nowISO() },
+    ],
+    managerApplications: [],
+    schools: [
+      { id: school1, name:"Bright Future Academy", contactPerson:"Mrs. Adaeze Nwachukwu", email:"admin@brightfuture.sch.ng", phone:"08145678901", location:"Ikeja, Lagos", orgType:"Private Secondary School", studentsCount:420 },
+    ],
+    schoolRequests: [
+      { id: uid("req"), schoolName:"Greenview International School", contactPerson:"Mr. Segun Bello", email:"info@greenview.sch.ng", phone:"08076543210", location:"Abeokuta, Ogun", orgType:"Private Primary & Secondary", studentsCount:300, programs:"Robotics League, Coding Club", message:"We'd like to set up a robotics club for our upper primary and JSS students this term.", status:"pending", submittedAt: nowISO() },
+    ],
+    assignments: [
+      { id: uid("asn"), employeeId: emp1, schoolId: school1, schoolName:"Bright Future Academy", date: new Date(Date.now()+86400000).toISOString().slice(0,10), time:"09:00", task:"Python class", instructions:"Bring projector and lesson materials.", status:"scheduled", createdAt: nowISO() },
+      { id: uid("asn"), employeeId: emp2, schoolId: school1, schoolName:"Bright Future Academy", date: new Date().toISOString().slice(0,10), time:"11:00", task:"Robotics intro", instructions:"Basic sensors kit needed.", status:"scheduled", createdAt: nowISO() },
+    ],
+    tasks: [
+      { id: uid("task"), title:"Teach Python Basics", employeeId: emp1, schoolName:"Bright Future Academy", date: new Date(Date.now()+86400000).toISOString().slice(0,10), priority:"high", instructions:"Teach variables, data types, and basic input/output.", status:"pending", completionNote:"", createdAt: nowISO() },
+      { id: uid("task"), title:"Prep robotics kits", employeeId: emp2, schoolName:"Bright Future Academy", date: new Date().toISOString().slice(0,10), priority:"medium", instructions:"Charge batteries and test sensors before class.", status:"in_progress", completionNote:"", createdAt: nowISO() },
+    ],
+    resources: [
+      { id: uid("res"), fileName:"Python_Basics_Week1.pdf", fileType:"application/pdf", description:"Intro lesson notes for week 1 Python class.", uploadedBy: managerUserId, uploadedByName:"Funmi Okoro", uploadedAt: nowISO(), accessType:"employee", accessTarget: emp1, dataUrl:null },
+      { id: uid("res"), fileName:"SCCI_General_Handbook.pdf", fileType:"application/pdf", description:"General staff handbook — available to all active employees.", uploadedBy: managerUserId, uploadedByName:"Funmi Okoro", uploadedAt: nowISO(), accessType:"general", accessTarget:null, dataUrl:null },
+    ],
+    notifications: [
+      { id: uid("notif"), audienceRole:"manager", audienceUserId:null, type:"application", message:"Tunde Bakare submitted an employee application.", link:"#/manager/applications", read:false, createdAt: nowISO() },
+      { id: uid("notif"), audienceRole:null, audienceUserId: empUser1, type:"assignment", message:"You've been assigned to Bright Future Academy tomorrow at 9:00 AM.", link:"#/employee/schedule", read:false, createdAt: nowISO() },
+    ],
+    attendance: [],
+    reports: [],
+    walletTxns: [
+      { id: uid("wtx"), employeeId: emp1, amount:5000, type:"credit", description:"Transport allowance", date: nowISO() },
+    ],
+    withdrawalRequests: [],
+    whatsappQueue: [],
+    activityLog: [],
+    session: null,
+  };
+}
+
+let DB = null;
+function persist(){ saveDB(DB); }
+
+/* ---- "API" layer: every function below mirrors a future backend call ---- */
+const api = {
+  async login(email, password){
+  const { data, error } = await scciSupabase.auth.signInWithPassword({
+    email: String(email).trim(),
+    password
+  });
+
+  if(error) {
+    throw new Error(error.message || "Invalid email or password.");
+  }
+
+  if(!data.user) {
+    throw new Error("Login failed. Please try again.");
+  }
+
+  const { data: profile, error: profileError } = await scciSupabase
+    .from("profiles")
+    .select("*")
+    .eq("id", data.user.id)
+    .single();
+
+  if(profileError) {
+    await scciSupabase.auth.signOut();
+    throw new Error("Your SCCI profile could not be loaded.");
+  }
+
+  if(profile.status === "pending" || profile.status === "applicant"){
+    await scciSupabase.auth.signOut();
+    throw new Error("Your application is still under review — you'll be notified once it's approved.");
+  }
+
+  if(profile.status === "inactive" || profile.status === "suspended"){
+    await scciSupabase.auth.signOut();
+    throw new Error("This account is not active. Please contact SCCI management.");
+  }
+
+  return {
+    id: profile.id,
+    role: profile.role,
+    name: profile.full_name || profile.email,
+    email: profile.email,
+    status: profile.status
+  };
+},
+  async logout(){
+    const u = api.currentUser();
+    if(u) logActivity("logout", `${u.name} (${u.role}) signed out.`, u.id);
+    DB.session = null; persist();
+  },
+  currentUser(){
+  return null;
+},
+  async submitEmployeeApplication(data){
+  const { data: signUpData, error: signUpError } =
+    await scciSupabase.auth.signUp({
+      email: data.email.trim(),
+      password: data.password,
+      options: {
+        emailRedirectTo: "http://localhost:5500/frontend-scci-ops.html#/join/employee/complete"
+      }
+    });
+
+  if(signUpError){
+    throw new Error(signUpError.message || "Could not create your account.");
+  }
+
+  if(!signUpData.user){
+    throw new Error("Account creation failed. Please try again.");
+  }
+
+  // With Confirm Email enabled, Supabase creates the user
+  // but does not create a session until the email is confirmed.
+  if(!signUpData.session){
+    return {
+      needsEmailConfirmation: true
+    };
+  }
+
+  return {
+    needsEmailConfirmation: false,
+    user: signUpData.user
+  };
+},
+  async submitManagerApplication(data){
+    const passwordHash = await hashPassword(data.password);
+    DB.managerApplications.push({ id:uid("mapp"), name:data.name, email:data.email, phone:data.phone, location:data.location, skills:(data.skills||"").split(",").map(s=>s.trim()).filter(Boolean), availability:data.availability, message:data.message, passwordHash, status:"pending", submittedAt: nowISO() });
+    notify({ audienceRole:"admin", type:"manager_application", message:`${data.name} requested manager/employer access.`, link:"#/admin/managers" });
+    logActivity("manager_application", `${data.name} requested manager/employer access.`);
+    persist();
+  },
+  async submitSchoolRequest(data){
+    const passwordHash = await hashPassword(data.password);
+    const userId = uid("user"); const schoolId = uid("school");
+    DB.users.push({ id:userId, role:"school", name:data.contactPerson, email:data.email, status:"pending", passwordHash, schoolId, createdAt: nowISO() });
+    DB.schools.push({ id:schoolId, userId, name:data.schoolName, contactPerson:data.contactPerson, email:data.email, phone:data.phone, location:data.location, orgType:data.orgType, studentsCount:Number(data.studentsCount)||0, createdAt: nowISO() });
+    DB.schoolRequests.push({ id:uid("req"), userId, schoolId, schoolName:data.schoolName, contactPerson:data.contactPerson, email:data.email, phone:data.phone, location:data.location, orgType:data.orgType, studentsCount:Number(data.studentsCount)||0, programs:data.programs, message:data.message, status:"pending", submittedAt: nowISO() });
+    notify({ audienceRole:"manager", type:"school_request", message:`${data.schoolName} requested SCCI services.`, link:"#/manager/schools" });
+    logActivity("school_request", `${data.schoolName} requested SCCI services.`);
+    persist();
+  },
+
+  async approveEmployee(empId){
+    const emp = DB.employees.find(e=>e.id===empId); if(!emp) return;
+    emp.status = "active";
+    const user = DB.users.find(u=>u.employeeId===empId); if(user) user.status="active";
+    notify({ audienceUserId:user?.id, type:"application", message:"Your SCCI employee application was approved. Welcome aboard!", link:"#/employee/overview" });
+    logActivity("approval", `${emp.name}'s employee application was approved.`, api.currentUser()?.id);
+    persist();
+  },
+  async rejectEmployee(empId){
+    const emp = DB.employees.find(e=>e.id===empId); if(!emp) return;
+    emp.status = "inactive";
+    const user = DB.users.find(u=>u.employeeId===empId); if(user) user.status="inactive";
+    notify({ audienceUserId:user?.id, type:"application", message:"Your SCCI employee application was not approved at this time.", link:"#/login" });
+    logActivity("rejection", `${emp.name}'s employee application was rejected.`, api.currentUser()?.id);
+    persist();
+  },
+  async approveManagerApp(id){
+    const app = DB.managerApplications.find(a=>a.id===id); if(!app) return;
+    app.status = "approved";
+    const userId = uid("user");
+    DB.users.push({ id:userId, role:"manager", name:app.name, email:app.email, status:"active", passwordHash: app.passwordHash, createdAt: nowISO() });
+    logActivity("approval", `${app.name} was approved for manager access.`, api.currentUser()?.id);
+    persist();
+  },
+  async rejectManagerApp(id){
+    const app = DB.managerApplications.find(a=>a.id===id); if(!app) return;
+    app.status = "rejected"; persist();
+  },
+  async updateSchoolRequestStatus(id, status){
+    const r = DB.schoolRequests.find(r=>r.id===id); if(!r) return;
+    r.status = status;
+    if(status === "approved" && r.userId){
+      const user = DB.users.find(u=>u.id===r.userId);
+      if(user && user.status !== "active"){
+        user.status = "active";
+        notify({ audienceUserId:user.id, type:"school_request", message:"Your SCCI service request was approved — you can now log in.", link:"#/school/overview" });
+        logActivity("approval", `${r.schoolName}'s service request was approved and their account activated.`, api.currentUser()?.id);
+      }
+    }
+    persist();
+  },
+
+  async createAssignment(data){
+    const a = { id:uid("asn"), employeeId:data.employeeId, schoolId:data.schoolId||null, schoolName:data.schoolName, date:data.date, time:data.time, task:data.task, instructions:data.instructions, status:"scheduled", createdAt: nowISO() };
+    DB.assignments.push(a);
+    const emp = DB.employees.find(e=>e.id===data.employeeId);
+    const user = emp && DB.users.find(u=>u.employeeId===emp.id);
+    notify({ audienceUserId:user?.id, type:"assignment", message:`New assignment: ${data.schoolName} on ${fmtDate(data.date)} at ${data.time}.`, link:"#/employee/schedule" });
+    queueWhatsAppNotification(user, `Hello ${emp?.name}, a new assignment has been added to your SCCI dashboard for ${fmtDate(data.date)}. Please log in to view details.`);
+    persist();
+  },
+  async cancelAssignment(id){
+    const a = DB.assignments.find(a=>a.id===id); if(!a) return;
+    a.status = "cancelled";
+    const emp = DB.employees.find(e=>e.id===a.employeeId);
+    const user = emp && DB.users.find(u=>u.employeeId===emp.id);
+    notify({ audienceUserId:user?.id, type:"assignment", message:`Your assignment at ${a.schoolName} on ${fmtDate(a.date)} was cancelled.`, link:"#/employee/schedule" });
+    persist();
+  },
+
+  async createTask(data){
+    return api.createTasks(data, [data.date]);
+  },
+  async createTasks(data, dates){
+    const emp = DB.employees.find(e=>e.id===data.employeeId);
+    const user = emp && DB.users.find(u=>u.employeeId===emp.id);
+    dates.forEach(date => {
+      DB.tasks.push({ id:uid("task"), title:data.title, employeeId:data.employeeId, schoolName:data.schoolName, date, priority:data.priority, instructions:data.instructions, status:"pending", completionNote:"", createdAt: nowISO() });
+    });
+    const label = dates.length>1 ? `${data.title} (${dates.length} sessions)` : data.title;
+    notify({ audienceUserId:user?.id, type:"task", message:`New task assigned: ${label}.`, link:"#/employee/tasks" });
+    logActivity("task", `${dates.length} task${dates.length>1?'s':''} ("${data.title}") assigned to ${emp?.name||'an employee'}.`, api.currentUser()?.id);
+    persist();
+    return dates.length;
+  },
+  async updateTaskStatus(id, status, note){
+    const t = DB.tasks.find(t=>t.id===id); if(!t) return;
+    t.status = status; if(note !== undefined) t.completionNote = note;
+    persist();
+  },
+
+  async uploadResource(data){
+    DB.resources.push({ id:uid("res"), fileName:data.fileName, fileType:data.fileType, description:data.description, uploadedBy:DB.session.userId, uploadedByName: api.currentUser()?.name, uploadedAt: nowISO(), accessType:data.accessType, accessTarget:data.accessTarget||null, dataUrl:data.dataUrl||null });
+    if(data.accessType === "employee"){
+      const emp = DB.employees.find(e=>e.id===data.accessTarget);
+      const user = emp && DB.users.find(u=>u.employeeId===emp.id);
+      notify({ audienceUserId:user?.id, type:"resource", message:`New file shared with you: ${data.fileName}`, link:"#/employee/resources" });
+    } else {
+      notify({ audienceRole:"employee", type:"resource", message:`New resource uploaded: ${data.fileName}`, link:"#/employee/resources" });
+    }
+    persist();
+  },
+
+  async submitAttendance(data){
+    DB.attendance.push({ id:uid("att"), employeeId:data.employeeId, assignmentId:data.assignmentId||null, date:data.date, status:data.status });
+    persist();
+  },
+  async submitReport(data){
+    DB.reports.push({ id:uid("rep"), employeeId:data.employeeId, assignmentId:data.assignmentId||null, date:data.date, activities:data.activities, studentsCount:data.studentsCount, challenges:data.challenges, notes:data.notes, status:"submitted", managerComment:"", createdAt: nowISO() });
+    notify({ audienceRole:"manager", type:"report", message:`New activity report submitted.`, link:"#/manager/reports" });
+    persist();
+  },
+  async reviewReport(id, comment){
+    const r = DB.reports.find(r=>r.id===id); if(!r) return;
+    r.status = "reviewed"; r.managerComment = comment||"";
+    persist();
+  },
+
+  async allocateWallet(employeeId, amount, description){
+    DB.walletTxns.push({ id:uid("wtx"), employeeId, amount:Number(amount), type:"credit", description:description||"Transport allowance", date: nowISO() });
+    const emp = DB.employees.find(e=>e.id===employeeId);
+    const user = emp && DB.users.find(u=>u.employeeId===emp.id);
+    notify({ audienceUserId:user?.id, type:"wallet", message:`₦${Number(amount).toLocaleString()} was added to your SCCI wallet.`, link:"#/employee/wallet" });
+    persist();
+  },
+  walletBalance(employeeId){
+    return DB.walletTxns.filter(t=>t.employeeId===employeeId).reduce((sum,t)=> sum + (t.type==="credit"? t.amount : -t.amount), 0);
+  },
+  async requestWithdrawal(employeeId, amount, bankName, accountName, accountNumber){
+    const bal = api.walletBalance(employeeId);
+    if(Number(amount) > bal) throw new Error("Amount exceeds wallet balance.");
+    DB.withdrawalRequests.push({ id:uid("wd"), employeeId, amount:Number(amount), bankName, accountName, accountNumber, status:"pending", requestedAt: nowISO() });
+    persist();
+  },
+
+  markNotificationRead(id){
+    const n = DB.notifications.find(n=>n.id===id); if(n) n.read = true; persist();
+  },
+  markAllRead(){
+    myNotifications().forEach(n=>n.read=true); persist();
+  },
+};
+
+function notify({audienceRole=null, audienceUserId=null, type, message, link}){
+  DB.notifications.push({ id:uid("notif"), audienceRole, audienceUserId, type, message, link, read:false, createdAt: nowISO() });
+}
+function logActivity(type, message, userId=null){
+  if(!Array.isArray(DB.activityLog)) DB.activityLog = [];
+  DB.activityLog.push({ id:uid("log"), type, message, userId, createdAt: nowISO() });
+  // keep the feed from growing unbounded in this demo store
+  if(DB.activityLog.length > 200) DB.activityLog.splice(0, DB.activityLog.length - 200);
+}
+function queueWhatsAppNotification(user, message){
+  // Placeholder integration point — see production notes at top of file.
+  if(!Array.isArray(DB.whatsappQueue)) DB.whatsappQueue = [];
+  DB.whatsappQueue.push({ id:uid("wa"), userId:user?.id||null, message, status:"queued (no provider configured)", queuedAt: nowISO() });
+}
+function myNotifications(){
+  const u = api.currentUser(); if(!u) return [];
+  return DB.notifications.filter(n => n.audienceUserId === u.id || (n.audienceRole && n.audienceRole === u.role))
+    .sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+}
+
+/* ------------------------------- ROUTER --------------------------------- */
+function go(hash){ location.hash = hash; }
+window.addEventListener("hashchange", render);
+(async function boot(){
+  DB = await loadDB();
+  render();
+})();
+
+function currentRoute(){
+  const h = location.hash.replace(/^#\/?/, "");
+  return h.split("/").filter(Boolean);
+}
+
+function render(){
+  if(!DB) return; // still booting — see boot() below
+  const app = document.getElementById("app");
+  const parts = currentRoute();
+  const user = api.currentUser();
+
+  // guard authenticated areas
+  const authedRoles = ["employee","manager","school","admin"];
+  if(authedRoles.includes(parts[0])){
+    if(!user || user.role !== parts[0]){
+      app.innerHTML = viewLogin();
+      wireLogin();
+      return;
+    }
+  }
+
+  let html = "";
+  if(parts.length === 0) html = viewPortalHome();
+  else if(parts[0] === "login") html = viewLogin();
+  else if(parts[0] === "join") html = viewJoin(parts[1] || "employee");
+  else if(parts[0] === "employee") html = viewDashboard("employee", parts[1] || "overview", user);
+  else if(parts[0] === "manager") html = viewDashboard("manager", parts[1] || "overview", user);
+  else if(parts[0] === "school") html = viewDashboard("school", parts[1] || "overview", user);
+  else if(parts[0] === "admin") html = viewDashboard("admin", parts[1] || "overview", user);
+  else html = viewPortalHome();
+
+  app.innerHTML = html;
+  wireGlobal();
+  if(parts[0] === "login") wireLogin();
+  wireCurrentView(parts);
+}
+
+/* ------------------------------ TOASTS / MODAL --------------------------- */
+function toast(msg){
+  const host = document.getElementById("toastHost");
+  const el = document.createElement("div");
+  el.className = "toast"; el.textContent = msg;
+  host.appendChild(el);
+  setTimeout(()=>{ el.remove(); }, 3800);
+}
+function openModal(html){
+  document.getElementById("modalBox").innerHTML = html;
+  document.getElementById("modalOverlay").classList.add("open");
+}
+function closeModal(){ document.getElementById("modalOverlay").classList.remove("open"); }
+document.getElementById("modalOverlay").addEventListener("click", (e)=>{ if(e.target.id==="modalOverlay") closeModal(); });
+
+/* ------------------------------- PUBLIC SHELL ---------------------------- */
+function publicTopbar(){
+  return `
+  <div class="pub-topbar">
+    <div class="pub-topbar-inner">
+      <a class="pub-logo" href="${PUBLIC_SITE}"><img src="${LOGO}" alt=""> SCCI</a>
+      <div class="pub-actions">
+        <a class="back-link" href="${PUBLIC_SITE}">← Public site</a>
+        <a class="btn btn-outline btn-sm" href="#/login">Login</a>
+        <a class="btn btn-solid btn-sm" href="#/join">Join SCCI</a>
+      </div>
+    </div>
+  </div>`;
+}
+
+function viewPortalHome(){
+  return `
+  ${publicTopbar()}
+  <div class="portal-hero">
+    <h1>SCCI Internal Operations</h1>
+    <p>The day-to-day system behind SCCI's programs — staff scheduling, lesson resources, applications, attendance, reports, and more, all in one place.</p>
+    <div class="pub-actions" style="justify-content:center;">
+      <a class="btn btn-solid" href="#/join">Join SCCI</a>
+      <a class="btn btn-outline" href="#/login">Login to dashboard</a>
+    </div>
+  </div>
+  <div class="portal-cards">
+    <div class="portal-card">
+      <h3>Work with SCCI</h3>
+      <p>Apply to teach coding, robotics, or AI in partner schools. Track your application, schedule, tasks, and wallet in one dashboard.</p>
+      <a class="btn btn-outline btn-sm" href="#/join/employee">Apply as employee</a>
+    </div>
+    <div class="portal-card">
+      <h3>Join as a manager</h3>
+      <p>SCCI management staff coordinate schools, employees, and programs. Manager access requires admin approval.</p>
+      <a class="btn btn-outline btn-sm" href="#/join/manager">Request manager access</a>
+    </div>
+    <div class="portal-card">
+      <h3>Partner your school</h3>
+      <p>Bring a computer club, robotics league, or STEAM program to your school. Submit a request and our team follows up.</p>
+      <a class="btn btn-outline btn-sm" href="#/join/school">Request SCCI services</a>
+    </div>
+  </div>
+  `;
+}
+/* --------------------------------- LOGIN --------------------------------- */
+function viewLogin(){
+  return `
+  ${publicTopbar()}
+  <div class="auth-shell">
+    <div class="auth-box">
+      <h1>Log in</h1>
+      <p class="sub">Enter your SCCI account email and password.</p>
+      <form id="loginForm">
+        <div class="field">
+  <label for="loginEmail">Email</label>
+  <input
+    id="loginEmail"
+    required
+    type="email"
+    name="email"
+    autocomplete="username"
+  >
+</div>
+
+<div class="field">
+  <label for="loginPassword">Password</label>
+  <input
+    id="loginPassword"
+    required
+    type="password"
+    name="password"
+    autocomplete="current-password"
+  >
+</div>
+        <button class="btn btn-solid" style="width:100%;" type="submit">Log in</button>
+      </form>
+      <p class="help-note">Not signed up yet? <a href="#/join" style="color:var(--blue);">Join SCCI</a></p>
+    </div>
+  </div>`;
+}
+function wireLogin(){
+  const form = document.getElementById("loginForm");
+  if(!form) return;
+  form.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const submitBtn = form.querySelector("button[type=submit]");
+    const d = Object.fromEntries(new FormData(form));
+    submitBtn.disabled = true; submitBtn.textContent = "Logging in…";
+    try {
+      const user = await api.login(d.email, d.password);
+      toast(`Welcome back, ${user.name.split(" ")[0]}.`);
+      const target = "#/" + user.role + "/overview";
+      if(location.hash === target){ render(); } else { go(target); }
+    } catch(err){
+      toast(err.message || "Could not log in.");
+      submitBtn.disabled = false; submitBtn.textContent = "Log in";
+    }
+  });
+}
+
+window.addEventListener("error", (e)=>{
+  try { toast("Unexpected error: " + (e.message || "see console")); } catch(_){}
+});
+
+/* --------------------------------- JOIN ----------------------------------- */
+function viewJoin(tab){
+  tab = ["employee","manager","school"].includes(tab) ? tab : "employee";
+  return `
+  ${publicTopbar()}
+  <div class="auth-shell">
+    <div class="auth-box" style="max-width:560px;">
+      <h1>Join SCCI</h1>
+      <p class="sub">Tell us how you'd like to get involved.</p>
+      <div class="tabs">
+        <button class="tab-btn ${tab==='employee'?'active':''}" data-jointab="employee">Employee</button>
+        <button class="tab-btn ${tab==='manager'?'active':''}" data-jointab="manager">Manager</button>
+        <button class="tab-btn ${tab==='school'?'active':''}" data-jointab="school">School / Partner</button>
+      </div>
+      ${tab==="employee" ? joinEmployeeForm() : tab==="manager" ? joinManagerForm() : joinSchoolForm()}
+    </div>
+  </div>`;
+}
+function joinEmployeeForm(){
+  return `
+  <form id="employeeApplyForm">
+    <div class="field"><label>Full name</label><input required name="name"></div>
+    <div class="field"><label>Email</label><input required type="email" name="email"></div>
+    <div class="field"><label>Phone number</label><input required name="phone"></div>
+    <div class="field"><label>Location</label><input required name="location" placeholder="e.g. Lagos"></div>
+    <div class="field"><label>Skills (comma separated)</label><input name="skills" placeholder="Python, Robotics, Scratch"></div>
+    <div class="field"><label>Availability</label>
+      <select name="availability"><option>Weekdays</option><option>Weekends</option><option>Flexible</option></select>
+    </div>
+    <div class="field"><label>Short introduction</label><textarea name="intro" rows="3" placeholder="Tell us about your experience teaching or working with students."></textarea></div>
+    <div class="field">
+      <label>CV, resume, or cover letter</label>
+      <input type="file" name="cv" accept=".pdf,.doc,.docx" required>
+      <p class="help-note">PDF or Word doc, up to 500KB for this local demo.</p>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>Password</label><input required type="password" name="password" minlength="6" autocomplete="new-password"></div>
+      <div class="field"><label>Confirm password</label><input required type="password" name="confirmPassword" minlength="6" autocomplete="new-password"></div>
+    </div>
+    <button class="btn btn-solid" style="width:100%;" type="submit">Submit application</button>
+  </form>`;
+}
+function joinManagerForm(){
+  return `
+  <div class="notice notice-info">Manager access is reviewed and approved by an SCCI admin — it isn't granted automatically.</div>
+  <form id="managerApplyForm">
+    <div class="field"><label>Full name</label><input required name="name"></div>
+    <div class="field"><label>Email</label><input required type="email" name="email"></div>
+    <div class="field"><label>Phone number</label><input required name="phone"></div>
+    <div class="field"><label>Location</label><input required name="location" placeholder="e.g. Lagos"></div>
+    <div class="field"><label>Skills (comma separated)</label><input name="skills" placeholder="Program management, Curriculum design"></div>
+    <div class="field"><label>Availability</label>
+      <select name="availability"><option>Weekdays</option><option>Weekends</option><option>Flexible</option></select>
+    </div>
+    <div class="field"><label>Why do you want manager access?</label><textarea name="message" rows="3" required></textarea></div>
+    <div class="grid grid-2">
+      <div class="field"><label>Password</label><input required type="password" name="password" minlength="6" autocomplete="new-password"></div>
+      <div class="field"><label>Confirm password</label><input required type="password" name="confirmPassword" minlength="6" autocomplete="new-password"></div>
+    </div>
+    <button class="btn btn-solid" style="width:100%;" type="submit">Submit request</button>
+  </form>`;
+}
+function joinSchoolForm(){
+  return `
+  <form id="schoolRequestForm">
+    <div class="field"><label>School / organization name</label><input required name="schoolName"></div>
+    <div class="field"><label>Contact person</label><input required name="contactPerson"></div>
+    <div class="grid grid-2">
+      <div class="field"><label>Email</label><input required type="email" name="email"></div>
+      <div class="field"><label>Phone</label><input required name="phone"></div>
+    </div>
+    <div class="field"><label>Location</label><input required name="location"></div>
+    <div class="field"><label>Type of organization</label><input name="orgType" placeholder="e.g. Private Secondary School"></div>
+    <div class="field"><label>Number of students (approx.)</label><input type="number" name="studentsCount"></div>
+    <div class="field"><label>Programs interested in</label><input name="programs" placeholder="e.g. Robotics League, Coding Club"></div>
+    <div class="field"><label>Message</label><textarea name="message" rows="3"></textarea></div>
+    <div class="grid grid-2">
+      <div class="field"><label>Password</label><input required type="password" name="password" minlength="6" autocomplete="new-password"></div>
+      <div class="field"><label>Confirm password</label><input required type="password" name="confirmPassword" minlength="6" autocomplete="new-password"></div>
+    </div>
+    <p class="help-note">This creates your SCCI login. Your account activates once SCCI approves the request.</p>
+    <button class="btn btn-solid" style="width:100%;" type="submit">Submit request</button>
+  </form>`;
+}
+
+/* ---------------------------- DASHBOARD SHELL ----------------------------- */
+const SIDEBARS = {
+  employee: [
+    ["overview","Overview"], ["schedule","My Schedule"], ["tasks","My Tasks"], ["resources","Resources"],
+    ["attendance","Attendance"], ["reports","Reports"], ["wallet","Wallet"], ["profile","Profile"],
+  ],
+  manager: [
+    ["overview","Overview"], ["employees","Employees"], ["applications","Applications"], ["schedule","Schedule"],
+    ["tasks","Tasks"], ["resources","Resources"], ["attendance","Attendance"], ["reports","Reports"],
+    ["wallet","Wallet / Allowances"], ["schools","Schools"],
+  ],
+  school: [
+    ["overview","Overview"], ["requests","Service Requests"], ["profile","My School"],
+  ],
+  admin: [
+    ["overview","Overview"], ["employees","Employees"], ["applications","Applications"], ["schools","Schools"],
+    ["users","Users"], ["activity","Activity Log"], ["managers","Manager Applications"], ["settings","Settings"],
+  ],
+};
+
+function viewDashboard(role, tab, user){
+  const links = SIDEBARS[role];
+  const valid = links.some(l=>l[0]===tab) ? tab : links[0][0];
+  const unread = myNotifications().filter(n=>!n.read).length;
+  return `
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="pub-logo" href="#/">${`<img src="${LOGO}" alt="">`} SCCI</a>
+      <div class="side-role">Internal Operations · ${role}</div>
+      ${links.map(([id,label])=>`<a class="side-link ${id===valid?'active':''}" href="#/${role}/${id}"><span class="dot"></span>${label}</a>`).join("")}
+      <div class="side-foot">
+        <a class="side-link" href="${PUBLIC_SITE}">← Public site</a>
+        <button class="side-link" style="width:100%; text-align:left; border:none; background:none;" id="logoutBtn">Log out</button>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <h2>${links.find(l=>l[0]===valid)[1]}</h2>
+        <div class="pub-actions">
+          <div class="bell-wrap">
+            <button class="bell-btn" id="bellBtn">🔔${unread?`<span class="bell-count">${unread}</span>`:""}</button>
+            <div class="bell-dropdown" id="bellDropdown">
+              ${myNotifications().length ? myNotifications().map(n=>`
+                <a class="notif-item ${n.read?'':'unread'}" href="${n.link||'#'}" data-notif="${n.id}">
+                  <div>${n.message}</div><div class="t">${fmtDateTime(n.createdAt)}</div>
+                </a>`).join("") : `<div class="empty-state">No notifications yet.</div>`}
+            </div>
+          </div>
+          <div class="avatar">${user.name.split(" ").map(w=>w[0]).slice(0,2).join("")}</div>
+        </div>
+      </div>
+      <div class="content">
+        ${dashboardContent(role, valid, user)}
+      </div>
+    </div>
+  </div>`;
+}
+
+function dashboardContent(role, tab, user){
+  if(role==="employee") return employeeViews(tab, user);
+  if(role==="manager") return managerViews(tab, user);
+  if(role==="school") return schoolViews(tab, user);
+  if(role==="admin") return adminViews(tab, user);
+  return "";
+}
+
+/* ------------------------------ EMPLOYEE VIEWS ---------------------------- */
+function myEmployee(user){ return DB.employees.find(e=>e.id===user.employeeId); }
+
+function employeeViews(tab, user){
+  const emp = myEmployee(user);
+  if(!emp) return `<div class="empty-state">No employee profile found.</div>`;
+  const myAssignments = DB.assignments.filter(a=>a.employeeId===emp.id).sort((a,b)=> a.date.localeCompare(b.date));
+  const myTasks = DB.tasks.filter(t=>t.employeeId===emp.id);
+  const myResources = DB.resources.filter(r=> r.accessType==="general" || (r.accessType==="employee" && r.accessTarget===emp.id));
+  const myReports = DB.reports.filter(r=>r.employeeId===emp.id);
+  const bal = api.walletBalance(emp.id);
+  const myTxns = DB.walletTxns.filter(t=>t.employeeId===emp.id).sort((a,b)=> new Date(b.date)-new Date(a.date));
+
+  if(tab==="overview"){
+    const today = new Date().toISOString().slice(0,10);
+    const todays = myAssignments.filter(a=>a.date===today && a.status==="scheduled");
+    const pendingTasks = myTasks.filter(t=>t.status!=="completed").length;
+    return `
+    <div class="section-head"><div><h2>Welcome back, ${emp.name.split(" ")[0]}</h2><p>Here's what needs your attention today.</p></div></div>
+    <div class="grid grid-4">
+      <div class="stat-card"><div class="n">${todays.length}</div><div class="l">Today's assignments</div></div>
+      <div class="stat-card"><div class="n">${pendingTasks}</div><div class="l">Open tasks</div></div>
+      <div class="stat-card"><div class="n">₦${bal.toLocaleString()}</div><div class="l">Wallet balance</div></div>
+      <div class="stat-card"><div class="n">${myResources.length}</div><div class="l">Resources available</div></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:12px;">Today's schedule</h3>
+      ${todays.length? todays.map(a=>assignmentRow(a)).join("") : `<div class="empty-state">Nothing scheduled today.</div>`}
+    </div>`;
+  }
+  if(tab==="schedule"){
+    return `
+    <div class="section-head"><h2>My schedule</h2></div>
+    <div class="card table-wrap">
+      <table><thead><tr><th>Date</th><th>Time</th><th>School</th><th>Task</th><th>Status</th></tr></thead>
+      <tbody>${myAssignments.length? myAssignments.map(a=>`
+        <tr><td>${fmtDate(a.date)}</td><td>${a.time}</td><td>${a.schoolName}</td><td>${a.task}<div class="help-note">${a.instructions||""}</div></td>
+        <td><span class="badge badge-${a.status==='scheduled'?'blue':a.status==='completed'?'green':'red'}">${a.status}</span></td></tr>`).join("") : `<tr><td colspan="5"><div class="empty-state">No assignments yet.</div></td></tr>`}
+      </tbody></table>
+    </div>`;
+  }
+  if(tab==="tasks"){
+    return `
+    <div class="section-head"><h2>My tasks</h2></div>
+    ${myTasks.length? myTasks.map(t=>`
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <div><b>${t.title}</b><div class="help-note">${t.schoolName} · ${fmtDate(t.date)} · Priority: ${t.priority}</div><p style="font-size:13px; color:var(--text-soft); margin-top:8px;">${t.instructions}</p></div>
+          <span class="badge badge-${t.status==='completed'?'green':t.status==='in_progress'?'amber':'gray'}">${t.status.replace('_',' ')}</span>
+        </div>
+        ${t.status!=="completed" ? `
+        <div class="divider"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          ${t.status==="pending"?`<button class="btn btn-outline btn-sm" data-taskstatus="${t.id}|in_progress">Start task</button>`:""}
+          <button class="btn btn-solid btn-sm" data-taskcomplete="${t.id}">Mark complete</button>
+        </div>` : `<div class="help-note">Completed${t.completionNote? " — "+t.completionNote:""}</div>`}
+      </div>`).join("") : `<div class="empty-state">No tasks assigned yet.</div>`}`;
+  }
+  if(tab==="resources"){
+    return `
+    <div class="section-head"><h2>Resources</h2><p style="width:100%;">Lesson notes and files shared with you by SCCI management.</p></div>
+    ${myResources.length? myResources.map(r=>`
+      <div class="card" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <div><b>${r.fileName}</b><div class="help-note">${r.description || "—"} · shared by ${r.uploadedByName} · ${fmtDate(r.uploadedAt)}</div></div>
+        <span class="badge badge-blue">${r.accessType}</span>
+      </div>`).join("") : `<div class="empty-state">No resources shared with you yet.</div>`}`;
+  }
+  if(tab==="attendance"){
+    const myAtt = DB.attendance.filter(a=>a.employeeId===emp.id).sort((a,b)=>b.date.localeCompare(a.date));
+    return `
+    <div class="section-head"><h2>Attendance</h2></div>
+    <div class="card">
+      <form id="attendanceForm" class="grid grid-3" style="align-items:end;">
+        <div class="field" style="margin-bottom:0;"><label>Assignment</label>
+          <select name="assignmentId">${myAssignments.filter(a=>a.status==="scheduled").map(a=>`<option value="${a.id}">${a.schoolName} — ${fmtDate(a.date)}</option>`).join("") || `<option value="">No active assignments</option>`}</select>
+        </div>
+        <div class="field" style="margin-bottom:0;"><label>Status</label>
+          <select name="status"><option value="present">Present</option><option value="absent">Absent</option><option value="excused">Excused</option></select>
+        </div>
+        <button class="btn btn-solid" type="submit">Submit attendance</button>
+      </form>
+    </div>
+    <div class="card table-wrap">
+      <table><thead><tr><th>Date</th><th>Status</th></tr></thead>
+      <tbody>${myAtt.length? myAtt.map(a=>`<tr><td>${fmtDate(a.date)}</td><td><span class="badge badge-${a.status==='present'?'green':a.status==='absent'?'red':'amber'}">${a.status}</span></td></tr>`).join("") : `<tr><td colspan="2"><div class="empty-state">No attendance submitted yet.</div></td></tr>`}</tbody></table>
+    </div>`;
+  }
+  if(tab==="reports"){
+    return `
+    <div class="section-head"><h2>Reports</h2></div>
+    <div class="card">
+      <form id="reportForm">
+        <div class="grid grid-2">
+          <div class="field"><label>School</label><input name="schoolName" list="myschools" required></div>
+          <div class="field"><label>Date</label><input type="date" name="date" required value="${new Date().toISOString().slice(0,10)}"></div>
+        </div>
+        <datalist id="myschools">${[...new Set(myAssignments.map(a=>a.schoolName))].map(s=>`<option value="${s}">`).join("")}</datalist>
+        <div class="field"><label>Activities completed</label><textarea name="activities" rows="2" required></textarea></div>
+        <div class="grid grid-2">
+          <div class="field"><label>Number of students</label><input type="number" name="studentsCount"></div>
+          <div class="field"><label>Challenges</label><input name="challenges"></div>
+        </div>
+        <div class="field"><label>Additional notes</label><textarea name="notes" rows="2"></textarea></div>
+        <button class="btn btn-solid" type="submit">Submit report</button>
+      </form>
+    </div>
+    ${myReports.length? myReports.map(r=>`
+      <div class="card"><div style="display:flex; justify-content:space-between;"><b>${r.schoolName||''} · ${fmtDate(r.date)}</b><span class="badge badge-${r.status==='reviewed'?'green':'amber'}">${r.status}</span></div>
+      <p style="font-size:13px; color:var(--text-soft); margin-top:8px;">${r.activities}</p>
+      ${r.managerComment?`<div class="help-note">Manager: ${r.managerComment}</div>`:""}</div>`).join("") : `<div class="empty-state">No reports submitted yet.</div>`}`;
+  }
+  if(tab==="wallet"){
+    return `
+    <div class="section-head"><h2>Wallet</h2></div>
+    <div class="stat-card" style="margin-bottom:16px;"><div class="n">₦${bal.toLocaleString()}</div><div class="l">Available balance</div></div>
+    <div class="card">
+      <h3 style="margin-bottom:12px;">Request withdrawal</h3>
+      <div class="notice notice-warn">Withdrawals are recorded here but no real bank transfer happens yet — a licensed payment provider must be integrated before this is enabled for real funds.</div>
+      <form id="withdrawForm">
+        <div class="grid grid-2">
+          <div class="field"><label>Amount (₦)</label><input type="number" name="amount" required max="${bal}"></div>
+          <div class="field"><label>Bank name</label><input name="bankName" required></div>
+        </div>
+        <div class="grid grid-2">
+          <div class="field"><label>Account name</label><input name="accountName" required></div>
+          <div class="field"><label>Account number</label><input name="accountNumber" required></div>
+        </div>
+        <button class="btn btn-outline" type="submit">Request withdrawal</button>
+      </form>
+    </div>
+    <div class="card table-wrap">
+      <table><thead><tr><th>Date</th><th>Description</th><th>Amount</th></tr></thead>
+      <tbody>${myTxns.length? myTxns.map(t=>`<tr><td>${fmtDate(t.date)}</td><td>${t.description}</td><td style="color:${t.type==='credit'?'var(--green)':'var(--red)'}">${t.type==='credit'?'+':'-'}₦${t.amount.toLocaleString()}</td></tr>`).join("") : `<tr><td colspan="3"><div class="empty-state">No transactions yet.</div></td></tr>`}</tbody></table>
+    </div>`;
+  }
+  if(tab==="profile"){
+    return `
+    <div class="section-head"><h2>Profile</h2></div>
+    <div class="card">
+      <div class="kv"><span>Name</span><span>${emp.name}</span></div>
+      <div class="kv"><span>Email</span><span>${emp.email}</span></div>
+      <div class="kv"><span>Phone</span><span>${emp.phone}</span></div>
+      <div class="kv"><span>Location</span><span>${emp.location}</span></div>
+      <div class="kv"><span>Skills</span><span>${(emp.skills||[]).join(", ")||"—"}</span></div>
+      <div class="kv"><span>Availability</span><span>${emp.availability||"—"}</span></div>
+      <div class="kv"><span>Status</span><span class="badge badge-green">${emp.status}</span></div>
+    </div>`;
+  }
+  return "";
+}
+function assignmentRow(a){
+  return `<div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06);"><b>${a.time}</b> — ${a.schoolName} <span style="color:var(--text-soft);">(${a.task})</span></div>`;
+}
+
+/* ------------------------------- MANAGER VIEWS ---------------------------- */
+function managerViews(tab, user){
+  const employees = DB.employees;
+  const activeEmployees = employees.filter(e=>e.status==="active");
+  const applicants = employees.filter(e=>e.status==="applicant");
+
+  if(tab==="overview"){
+    const today = new Date().toISOString().slice(0,10);
+    const todaysAssignments = DB.assignments.filter(a=>a.date===today && a.status==="scheduled");
+    const pendingReports = DB.reports.filter(r=>r.status==="submitted").length;
+    return `
+    <div class="section-head"><div><h2>Operations overview</h2><p>What needs your attention today.</p></div></div>
+    <div class="grid grid-4">
+      <div class="stat-card"><div class="n">${activeEmployees.length}</div><div class="l">Active employees</div></div>
+      <div class="stat-card"><div class="n">${applicants.length}</div><div class="l">Pending applications</div></div>
+      <div class="stat-card"><div class="n">${todaysAssignments.length}</div><div class="l">Today's assignments</div></div>
+      <div class="stat-card"><div class="n">${pendingReports}</div><div class="l">Pending reports</div></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3 style="margin-bottom:12px;">Today's assignments</h3>
+        ${todaysAssignments.length? todaysAssignments.map(a=>{ const e=employees.find(e=>e.id===a.employeeId); return `<div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.06); font-size:13px;"><b>${e?.name||'—'}</b> · ${a.schoolName} · ${a.time}</div>`; }).join("") : `<div class="empty-state">Nothing scheduled today.</div>`}
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:12px;">Recent applications</h3>
+        ${applicants.length? applicants.slice(0,5).map(e=>`<div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.06); font-size:13px; display:flex; justify-content:space-between;"><span>${e.name} · ${e.location}</span><a href="#/manager/applications" style="color:var(--blue);">Review</a></div>`).join("") : `<div class="empty-state">No pending applications.</div>`}
+      </div>
+    </div>`;
+  }
+  if(tab==="employees"){
+    return renderEmployeesTab(employees);
+  }
+  if(tab==="applications"){
+    return renderApplicationsTab(applicants);
+  }
+  if(tab==="schedule"){
+    const upcoming = DB.assignments.slice().sort((a,b)=>a.date.localeCompare(b.date));
+    return `
+    <div class="section-head"><h2>Schedule</h2><button class="btn btn-solid btn-sm" id="newAssignmentBtn">+ New assignment</button></div>
+    <div class="card table-wrap">
+      <table><thead><tr><th>Date</th><th>Time</th><th>Employee</th><th>School</th><th>Task</th><th>Status</th><th></th></tr></thead>
+      <tbody>${upcoming.length? upcoming.map(a=>{ const e=employees.find(e=>e.id===a.employeeId); return `
+        <tr><td>${fmtDate(a.date)}</td><td>${a.time}</td><td>${e?.name||"—"}</td><td>${a.schoolName}</td><td>${a.task}</td>
+        <td><span class="badge badge-${a.status==='scheduled'?'blue':a.status==='completed'?'green':'red'}">${a.status}</span></td>
+        <td>${a.status==="scheduled"?`<button class="btn btn-ghost btn-sm" data-cancelassign="${a.id}">Cancel</button>`:""}</td></tr>`; }).join("") : `<tr><td colspan="7"><div class="empty-state">No assignments yet.</div></td></tr>`}</tbody></table>
+    </div>`;
+  }
+  if(tab==="tasks"){
+    const tasks = DB.tasks.slice().sort((a,b)=>a.date.localeCompare(b.date));
+    return `
+    <div class="section-head"><h2>Tasks</h2><button class="btn btn-solid btn-sm" id="newTaskBtn">+ New task</button></div>
+    <div class="card table-wrap">
+      <table><thead><tr><th>Title</th><th>Employee</th><th>School</th><th>Date</th><th>Priority</th><th>Status</th></tr></thead>
+      <tbody>${tasks.length? tasks.map(t=>{ const e=employees.find(e=>e.id===t.employeeId); return `
+        <tr><td>${t.title}</td><td>${e?.name||"—"}</td><td>${t.schoolName}</td><td>${fmtDate(t.date)}</td>
+        <td><span class="badge badge-${t.priority==='high'?'red':t.priority==='medium'?'amber':'gray'}">${t.priority}</span></td>
+        <td><span class="badge badge-${t.status==='completed'?'green':t.status==='in_progress'?'amber':'gray'}">${t.status.replace('_',' ')}</span></td></tr>`; }).join("") : `<tr><td colspan="6"><div class="empty-state">No tasks yet.</div></td></tr>`}</tbody></table>
+    </div>`;
+  }
+  if(tab==="resources"){
+    return `
+    <div class="section-head"><h2>Resources</h2><button class="btn btn-solid btn-sm" id="newResourceBtn">+ Upload file</button></div>
+    <div class="notice notice-info">Small files are stored locally for this demo. Production needs a real file storage provider (see code notes).</div>
+    <div class="card table-wrap">
+      <table><thead><tr><th>File</th><th>Access</th><th>Uploaded</th></tr></thead>
+      <tbody>${DB.resources.length? DB.resources.map(r=>`
+        <tr><td>${r.fileName}<div class="help-note">${r.description||""}</div></td><td><span class="badge badge-blue">${r.accessType}</span></td><td>${fmtDate(r.uploadedAt)}</td></tr>`).join("") : `<tr><td colspan="3"><div class="empty-state">No resources uploaded.</div></td></tr>`}</tbody></table>
+    </div>`;
+  }
+  if(tab==="attendance"){
+    const today = new Date().toISOString().slice(0,10);
+    const todaysAtt = DB.attendance.filter(a=>a.date===today);
+    return `
+    <div class="section-head"><h2>Attendance — today</h2></div>
+    <div class="card table-wrap">
+      <table><thead><tr><th>Employee</th><th>Status</th></tr></thead>
+      <tbody>${todaysAtt.length? todaysAtt.map(a=>{ const e=employees.find(e=>e.id===a.employeeId); return `<tr><td>${e?.name||"—"}</td><td><span class="badge badge-${a.status==='present'?'green':a.status==='absent'?'red':'amber'}">${a.status}</span></td></tr>`; }).join("") : `<tr><td colspan="2"><div class="empty-state">No attendance submitted for today yet.</div></td></tr>`}</tbody></table>
+    </div>`;
+  }
+  if(tab==="reports"){
+    const reports = DB.reports.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+    return `
+    <div class="section-head"><h2>Employee reports</h2></div>
+    ${reports.length? reports.map(r=>{ const e=employees.find(e=>e.id===r.employeeId); return `
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;"><b>${e?.name||"—"} · ${r.schoolName||""} · ${fmtDate(r.date)}</b><span class="badge badge-${r.status==='reviewed'?'green':'amber'}">${r.status}</span></div>
+        <p style="font-size:13px; color:var(--text-soft); margin-top:8px;">${r.activities}</p>
+        <div class="help-note">Students: ${r.studentsCount||"—"} · Challenges: ${r.challenges||"—"}</div>
+        ${r.status!=="reviewed" ? `<div class="divider"></div><form data-reviewreport="${r.id}" style="display:flex; gap:8px;"><input name="comment" placeholder="Add a comment (optional)" style="flex:1;"><button class="btn btn-solid btn-sm" type="submit">Mark reviewed</button></form>` : `<div class="help-note">Comment: ${r.managerComment||"—"}</div>`}
+      </div>`; }).join("") : `<div class="empty-state">No reports submitted yet.</div>`}`;
+  }
+  if(tab==="wallet"){
+    return `
+    <div class="section-head"><h2>Wallet / Allowances</h2></div>
+    <div class="card">
+      <h3 style="margin-bottom:12px;">Allocate transport allowance</h3>
+      <form id="allocateForm" class="grid grid-3" style="align-items:end;">
+        <div class="field" style="margin-bottom:0;"><label>Employee</label>
+          <select name="employeeId">${activeEmployees.map(e=>`<option value="${e.id}">${e.name}</option>`).join("")}</select>
+        </div>
+        <div class="field" style="margin-bottom:0;"><label>Amount (₦)</label><input type="number" name="amount" required></div>
+        <button class="btn btn-solid" type="submit">Allocate</button>
+      </form>
+    </div>
+    <div class="card table-wrap">
+      <table><thead><tr><th>Employee</th><th>Balance</th></tr></thead>
+      <tbody>${activeEmployees.map(e=>`<tr><td>${e.name}</td><td>₦${api.walletBalance(e.id).toLocaleString()}</td></tr>`).join("")}</tbody></table>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:12px;">Withdrawal requests</h3>
+      ${DB.withdrawalRequests.length? `<div class="table-wrap"><table><thead><tr><th>Employee</th><th>Amount</th><th>Bank</th><th>Status</th></tr></thead><tbody>${DB.withdrawalRequests.map(w=>{ const e=employees.find(e=>e.id===w.employeeId); return `<tr><td>${e?.name}</td><td>₦${w.amount.toLocaleString()}</td><td>${w.bankName} · ${w.accountNumber}</td><td><span class="badge badge-amber">${w.status}</span></td></tr>`; }).join("")}</tbody></table></div>` : `<div class="empty-state">No withdrawal requests yet.</div>`}
+    </div>`;
+  }
+  if(tab==="schools"){
+    return renderSchoolsTab();
+  }
+  return "";
+}
+
+/* ---- Shared tab renderers (used by both Manager and Admin dashboards) ---- */
+function renderEmployeesTab(employees){
+  employees = employees || DB.employees;
+  return `
+    <div class="section-head"><h2>Employee directory</h2></div>
+    <div class="card table-wrap">
+      <table><thead><tr><th>Name</th><th>Location</th><th>Skills</th><th>Status</th><th></th></tr></thead>
+      <tbody>${employees.map(e=>`
+        <tr><td>${e.name}<div class="help-note">${e.email}</div></td><td>${e.location}</td><td>${(e.skills||[]).join(", ")||"—"}</td>
+        <td><span class="badge badge-${e.status==='active'?'green':e.status==='applicant'?'amber':'gray'}">${e.status}</span></td>
+        <td><button class="btn btn-ghost btn-sm" data-empview="${e.id}">View</button></td></tr>`).join("")}</tbody></table>
+    </div>`;
+}
+function renderApplicationsTab(applicants){
+  applicants = applicants || DB.employees.filter(e=>e.status==="applicant");
+  return `
+    <div class="section-head"><h2>Employee applications</h2></div>
+    ${applicants.length? applicants.map(e=>`
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <div><b>${e.name}</b><div class="help-note">${e.email} · ${e.phone} · ${e.location}</div>
+          <p style="font-size:13px; color:var(--text-soft); margin-top:8px;">${e.intro||"No introduction provided."}</p>
+          <div class="help-note">Skills: ${(e.skills||[]).join(", ")||"—"} · Availability: ${e.availability||"—"}</div>
+          ${e.cvDataUrl ? `<a href="${e.cvDataUrl}" download="${e.cvFileName||'cv'}" style="color:var(--blue); font-size:12px; display:inline-block; margin-top:8px;">📄 ${e.cvFileName||"Download CV"}</a>` : `<div class="help-note" style="margin-top:8px;">No CV uploaded.</div>`}</div>
+          <div style="display:flex; gap:8px; align-self:flex-start;">
+            <button class="btn btn-solid btn-sm" data-approveemp="${e.id}">Approve</button>
+            <button class="btn btn-danger btn-sm" data-rejectemp="${e.id}">Reject</button>
+          </div>
+        </div>
+      </div>`).join("") : `<div class="empty-state">No pending applications.</div>`}`;
+}
+function renderSchoolsTab(){
+  return `
+    <div class="section-head"><h2>Schools & service requests</h2></div>
+    ${DB.schoolRequests.length? DB.schoolRequests.map(r=>`
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;"><b>${r.schoolName}</b><span class="badge badge-${r.status==='pending'?'amber':r.status==='rejected'?'red':'green'}">${r.status}</span></div>
+        <div class="help-note">${r.contactPerson} · ${r.email} · ${r.phone} · ${r.location}</div>
+        <p style="font-size:13px; color:var(--text-soft); margin-top:8px;">${r.message||""}</p>
+        <div class="divider"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          ${["pending","contacted","approved","scheduled","completed","rejected"].map(s=>`<button class="btn btn-sm ${r.status===s?'btn-solid':'btn-outline'}" data-schoolstatus="${r.id}|${s}">${s}</button>`).join("")}
+        </div>
+      </div>`).join("") : `<div class="empty-state">No school requests yet.</div>`}
+    <div class="card">
+      <h3 style="margin-bottom:12px;">Active partner schools</h3>
+      ${DB.schools.map(s=>`<div class="kv"><span>${s.name}</span><span>${s.location} · ${s.studentsCount} students</span></div>`).join("") || `<div class="empty-state">No partner schools yet.</div>`}
+    </div>`;
+}
+
+/* ------------------------------- SCHOOL VIEWS ------------------------------ */
+function schoolViews(tab, user){
+  const school = DB.schools.find(s=>s.id===user.schoolId);
+  const myRequests = DB.schoolRequests.filter(r=> school && r.schoolName===school.name);
+  if(tab==="overview"){
+    return `
+    <div class="section-head"><h2>Welcome, ${school?.name||user.name}</h2></div>
+    <div class="grid grid-3">
+      <div class="stat-card"><div class="n">${myRequests.length}</div><div class="l">Service requests</div></div>
+      <div class="stat-card"><div class="n">${DB.assignments.filter(a=>a.schoolId===school?.id).length}</div><div class="l">Program sessions</div></div>
+      <div class="stat-card"><div class="n">${school?.studentsCount||0}</div><div class="l">Students on record</div></div>
+    </div>`;
+  }
+  if(tab==="requests"){
+    return `
+    <div class="section-head"><h2>My service requests</h2></div>
+    ${myRequests.length? myRequests.map(r=>`
+      <div class="card"><div style="display:flex; justify-content:space-between;"><b>${r.programs||"General request"}</b><span class="badge badge-${r.status==='pending'?'amber':r.status==='rejected'?'red':'green'}">${r.status}</span></div>
+      <p style="font-size:13px; color:var(--text-soft); margin-top:8px;">${r.message||""}</p><div class="help-note">Submitted ${fmtDate(r.submittedAt)}</div></div>`).join("") : `<div class="empty-state">No requests submitted yet from this account.</div>`}`;
+  }
+  if(tab==="profile"){
+    return `
+    <div class="section-head"><h2>My school</h2></div>
+    <div class="card">
+      <div class="kv"><span>Name</span><span>${school?.name||"—"}</span></div>
+      <div class="kv"><span>Contact person</span><span>${school?.contactPerson||"—"}</span></div>
+      <div class="kv"><span>Email</span><span>${school?.email||"—"}</span></div>
+      <div class="kv"><span>Phone</span><span>${school?.phone||"—"}</span></div>
+      <div class="kv"><span>Location</span><span>${school?.location||"—"}</span></div>
+      <div class="kv"><span>Students</span><span>${school?.studentsCount||"—"}</span></div>
+    </div>`;
+  }
+  return "";
+}
+
+/* -------------------------------- ADMIN VIEWS ------------------------------ */
+function adminViews(tab, user){
+  if(tab==="overview"){
+    const recent = DB.activityLog.slice().sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt)).slice(0,8);
+    const pendingEmployeeApps = DB.employees.filter(e=>e.status==='applicant').length;
+    const pendingSchoolReqs = DB.schoolRequests.filter(r=>r.status==='pending').length;
+    return `
+    <div class="section-head"><h2>System overview</h2></div>
+    <div class="grid grid-4">
+      <div class="stat-card"><div class="n">${DB.users.length}</div><div class="l">Total users</div></div>
+      <div class="stat-card"><div class="n">${DB.employees.filter(e=>e.status==='active').length}</div><div class="l">Active employees</div></div>
+      <div class="stat-card"><div class="n">${DB.schools.length}</div><div class="l">Partner schools</div></div>
+      <div class="stat-card"><div class="n">${DB.managerApplications.filter(a=>a.status==='pending').length}</div><div class="l">Pending manager apps</div></div>
+    </div>
+    <div class="grid grid-2" style="margin-top:16px;">
+      <div class="stat-card"><div class="n">${pendingEmployeeApps}</div><div class="l">Pending employee applications</div></div>
+      <div class="stat-card"><div class="n">${pendingSchoolReqs}</div><div class="l">Pending school requests</div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><h3>Recent activity</h3><a href="#/admin/activity" style="color:var(--blue); font-size:13px;">View all</a></div>
+      ${recent.length? recent.map(l=>`<div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.06); font-size:13px; display:flex; justify-content:space-between; gap:12px;"><span>${l.message}</span><span class="help-note" style="white-space:nowrap;">${fmtDateTime(l.createdAt)}</span></div>`).join("") : `<div class="empty-state">No activity recorded yet.</div>`}
+    </div>`;
+  }
+  if(tab==="employees"){
+    return renderEmployeesTab();
+  }
+  if(tab==="applications"){
+    return renderApplicationsTab();
+  }
+  if(tab==="schools"){
+    return renderSchoolsTab();
+  }
+  if(tab==="activity"){
+    const log = DB.activityLog.slice().sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+    const loginsOnly = log.filter(l=>l.type==="login" || l.type==="logout");
+    return `
+    <div class="section-head"><div><h2>Activity log</h2><p>Every sign-in, sign-out, application, and approval across the system.</p></div></div>
+    <div class="card">
+      <h3 style="margin-bottom:12px;">Who's signed in recently</h3>
+      ${loginsOnly.length? loginsOnly.slice(0,10).map(l=>`<div class="kv"><span>${l.message}</span><span>${fmtDateTime(l.createdAt)}</span></div>`).join("") : `<div class="empty-state">No sign-ins recorded yet.</div>`}
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:12px;">Full activity feed</h3>
+      ${log.length? log.map(l=>`<div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.06); font-size:13px; display:flex; justify-content:space-between; gap:12px;"><span><span class="badge badge-gray" style="margin-right:8px;">${l.type.replace('_',' ')}</span>${l.message}</span><span class="help-note" style="white-space:nowrap;">${fmtDateTime(l.createdAt)}</span></div>`).join("") : `<div class="empty-state">No activity recorded yet.</div>`}
+    </div>
+    <p class="help-note">This is an in-browser demo log. In production this becomes a real, server-side audit log tied to authenticated sessions — not something the browser can be trusted to report on its own.</p>`;
+  }
+  if(tab==="users"){
+    return `
+    <div class="section-head"><h2>Users</h2></div>
+    <div class="card table-wrap">
+      <table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr></thead>
+      <tbody>${DB.users.map(u=>`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td><span class="badge badge-${u.status==='active'?'green':'gray'}">${u.status}</span></td></tr>`).join("")}</tbody></table>
+    </div>`;
+  }
+  if(tab==="managers"){
+    return `
+    <div class="section-head"><h2>Manager applications</h2></div>
+    ${DB.managerApplications.length? DB.managerApplications.map(a=>`
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;"><b>${a.name}</b><span class="badge badge-${a.status==='pending'?'amber':a.status==='rejected'?'red':'green'}">${a.status}</span></div>
+        <div class="help-note">${a.email} · ${a.phone}</div>
+        <p style="font-size:13px; color:var(--text-soft); margin-top:8px;">${a.message}</p>
+        ${a.status==="pending"?`<div class="divider"></div><div style="display:flex; gap:8px;"><button class="btn btn-solid btn-sm" data-approvemgr="${a.id}">Approve</button><button class="btn btn-danger btn-sm" data-rejectmgr="${a.id}">Reject</button></div>`:""}
+      </div>`).join("") : `<div class="empty-state">No manager applications yet.</div>`}`;
+  }
+  if(tab==="settings"){
+    return `
+    <div class="section-head"><h2>System settings</h2></div>
+    <div class="card">
+      <h3 style="margin-bottom:8px;">Production readiness checklist</h3>
+      <div class="kv"><span>Authentication provider</span><span class="badge badge-red">Not configured</span></div>
+      <div class="kv"><span>Database</span><span class="badge badge-red">Not configured (using browser storage)</span></div>
+      <div class="kv"><span>File storage provider</span><span class="badge badge-red">Not configured</span></div>
+      <div class="kv"><span>WhatsApp Business API</span><span class="badge badge-red">Not configured</span></div>
+      <div class="kv"><span>Payment / payout provider</span><span class="badge badge-red">Not configured</span></div>
+      <p class="help-note">These are intentionally left disconnected until real credentials and a real backend exist — see the comment block at the top of the source file for exactly what to wire up.</p>
+    </div>`;
+  }
+  return "";
+}
+
+/* -------------------------------- WIRING ----------------------------------- */
+function wireGlobal(){
+  const bellBtn = document.getElementById("bellBtn");
+  if(bellBtn){
+    bellBtn.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      document.getElementById("bellDropdown").classList.toggle("open");
+    });
+    document.addEventListener("click", ()=> document.getElementById("bellDropdown")?.classList.remove("open"), {once:true});
+    document.querySelectorAll("[data-notif]").forEach(el=>{
+      el.addEventListener("click", ()=>{ api.markNotificationRead(el.dataset.notif); });
+    });
+  }
+  const logoutBtn = document.getElementById("logoutBtn");
+  if(logoutBtn) logoutBtn.addEventListener("click", async ()=>{ await api.logout(); go("#/"); });
+}
+
+function wireCurrentView(parts){
+  // JOIN forms
+  document.querySelectorAll("[data-jointab]").forEach(b=> b.addEventListener("click", ()=> go("#/join/"+b.dataset.jointab)));
+
+  const empForm = document.getElementById("employeeApplyForm");
+
+if(empForm) empForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+
+  const fd = new FormData(empForm);
+  const d = Object.fromEntries(fd);
+
+  if(d.password !== d.confirmPassword){
+    toast("Passwords don't match.");
+    return;
+  }
+
+  if((d.password || "").length < 6){
+    toast("Password should be at least 6 characters.");
+    return;
+  }
+
+  const cvFile = fd.get("cv");
+
+  if(!cvFile || !cvFile.size){
+    toast("Please upload your CV.");
+    return;
+  }
+
+  if(cvFile.size > 5 * 1024 * 1024){
+    toast("CV must be 5MB or smaller.");
+    return;
+  }
+
+  const submitBtn = empForm.querySelector("button[type=submit]");
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Creating account…";
+
+  try{
+    const result = await api.submitEmployeeApplication(d);
+
+    if(result.needsEmailConfirmation){
+      sessionStorage.setItem(
+        "scci_employee_signup_email",
+        d.email
+      );
+
+      openModal(`
+        <div style="text-align:center;">
+          <h3>Check your email</h3>
+          <p style="margin-top:10px; color:var(--text-soft);">
+            Your SCCI account has been created.
+          </p>
+          <p style="margin-top:10px; color:var(--text-soft);">
+            We sent a confirmation link to <strong>${d.email}</strong>.
+          </p>
+          <div class="modal-foot" style="justify-content:center; margin-top:20px;">
+            <button type="button" class="btn btn-solid"
+              onclick="closeModal(); go('#/login');">
+              Go to login
+            </button>
+          </div>
+        </div>
+      `);
+
+      return;
+    }
+
+    toast("Account created.");
+    go("#/login");
+
+  }catch(err){
+    console.error("Employee signup error:", err);
+    toast(err.message || "Could not create your account.");
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Submit application";
+  }
+});
+
+  const mgrForm = document.getElementById("managerApplyForm");
+  if(mgrForm) mgrForm.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(mgrForm));
+    if(d.password !== d.confirmPassword){ toast("Passwords don't match."); return; }
+    if((d.password||"").length < 6){ toast("Password should be at least 6 characters."); return; }
+    await api.submitManagerApplication(d);
+    toast("Request submitted for admin review.");
+    go("#/");
+  });
+
+  const schoolForm = document.getElementById("schoolRequestForm");
+  if(schoolForm) schoolForm.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(schoolForm));
+    if(d.password !== d.confirmPassword){ toast("Passwords don't match."); return; }
+    if((d.password||"").length < 6){ toast("Password should be at least 6 characters."); return; }
+    await api.submitSchoolRequest(d);
+    toast("Request submitted — SCCI will follow up soon.");
+    go("#/");
+  });
+
+  // MANAGER actions
+  document.querySelectorAll("[data-approveemp]").forEach(b=> b.addEventListener("click", async ()=>{ await api.approveEmployee(b.dataset.approveemp); toast("Employee approved."); render(); }));
+  document.querySelectorAll("[data-rejectemp]").forEach(b=> b.addEventListener("click", async ()=>{ await api.rejectEmployee(b.dataset.rejectemp); toast("Application rejected."); render(); }));
+  document.querySelectorAll("[data-cancelassign]").forEach(b=> b.addEventListener("click", async ()=>{ await api.cancelAssignment(b.dataset.cancelassign); toast("Assignment cancelled."); render(); }));
+  document.querySelectorAll("[data-schoolstatus]").forEach(b=> b.addEventListener("click", async ()=>{ const [id,status]=b.dataset.schoolstatus.split("|"); await api.updateSchoolRequestStatus(id,status); toast("Status updated."); render(); }));
+  document.querySelectorAll("[data-reviewreport]").forEach(f=> f.addEventListener("submit", async (e)=>{ e.preventDefault(); const comment = new FormData(f).get("comment"); await api.reviewReport(f.dataset.reviewreport, comment); toast("Report marked reviewed."); render(); }));
+
+  const allocForm = document.getElementById("allocateForm");
+  if(allocForm) allocForm.addEventListener("submit", async (e)=>{ e.preventDefault(); const d=Object.fromEntries(new FormData(allocForm)); await api.allocateWallet(d.employeeId, d.amount, "Transport allowance"); toast("Allowance allocated."); render(); });
+
+  const newAssignBtn = document.getElementById("newAssignmentBtn");
+  if(newAssignBtn) newAssignBtn.addEventListener("click", ()=> openNewAssignmentModal());
+  const newTaskBtn = document.getElementById("newTaskBtn");
+  if(newTaskBtn) newTaskBtn.addEventListener("click", ()=> openNewTaskModal());
+  const newResourceBtn = document.getElementById("newResourceBtn");
+  if(newResourceBtn) newResourceBtn.addEventListener("click", ()=> openNewResourceModal());
+
+  // EMPLOYEE actions
+  document.querySelectorAll("[data-taskstatus]").forEach(b=> b.addEventListener("click", async ()=>{ const [id,status]=b.dataset.taskstatus.split("|"); await api.updateTaskStatus(id,status); render(); }));
+  document.querySelectorAll("[data-taskcomplete]").forEach(b=> b.addEventListener("click", ()=> openCompleteTaskModal(b.dataset.taskcomplete)));
+
+  const attForm = document.getElementById("attendanceForm");
+  if(attForm) attForm.addEventListener("submit", async (e)=>{ e.preventDefault(); const d=Object.fromEntries(new FormData(attForm)); const user=api.currentUser(); await api.submitAttendance({employeeId:user.employeeId, assignmentId:d.assignmentId, date:new Date().toISOString().slice(0,10), status:d.status}); toast("Attendance submitted."); render(); });
+
+  const repForm = document.getElementById("reportForm");
+  if(repForm) repForm.addEventListener("submit", async (e)=>{ e.preventDefault(); const d=Object.fromEntries(new FormData(repForm)); const user=api.currentUser(); await api.submitReport({employeeId:user.employeeId, schoolName:d.schoolName, date:d.date, activities:d.activities, studentsCount:d.studentsCount, challenges:d.challenges, notes:d.notes}); toast("Report submitted."); render(); });
+
+  const wdForm = document.getElementById("withdrawForm");
+  if(wdForm) wdForm.addEventListener("submit", async (e)=>{ e.preventDefault(); const d=Object.fromEntries(new FormData(wdForm)); const user=api.currentUser(); try{ await api.requestWithdrawal(user.employeeId, d.amount, d.bankName, d.accountName, d.accountNumber); toast("Withdrawal request submitted."); render(); } catch(err){ toast(err.message); } });
+
+  // ADMIN actions
+  document.querySelectorAll("[data-approvemgr]").forEach(b=> b.addEventListener("click", async ()=>{ await api.approveManagerApp(b.dataset.approvemgr); toast("Manager approved."); render(); }));
+  document.querySelectorAll("[data-rejectmgr]").forEach(b=> b.addEventListener("click", async ()=>{ await api.rejectManagerApp(b.dataset.rejectmgr); toast("Application rejected."); render(); }));
+}
+
+/* -------------------------------- MODALS ------------------------------------ */
+function openNewAssignmentModal(){
+  const employees = DB.employees.filter(e=>e.status==="active");
+  const schools = DB.schools;
+  openModal(`
+    <h3>New assignment</h3>
+    <form id="assignForm">
+      <div class="field"><label>Employee</label><select name="employeeId">${employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join("")}</select></div>
+      <div class="field"><label>School</label><input name="schoolName" list="schoolList" required value="${schools[0]?.name||''}"></div>
+      <datalist id="schoolList">${schools.map(s=>`<option value="${s.name}">`).join("")}</datalist>
+      <div class="grid grid-2">
+        <div class="field"><label>Date</label><input type="date" name="date" required value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="field"><label>Time</label><input type="time" name="time" required value="09:00"></div>
+      </div>
+      <div class="field"><label>Task</label><input name="task" required placeholder="e.g. Python class"></div>
+      <div class="field"><label>Instructions</label><textarea name="instructions" rows="2"></textarea></div>
+      <div class="modal-foot"><button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-solid">Create</button></div>
+    </form>`);
+  document.getElementById("assignForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(e.target));
+    const school = DB.schools.find(s=>s.name===d.schoolName);
+    await api.createAssignment({...d, schoolId: school?.id});
+    closeModal(); toast("Assignment created."); render();
+  });
+}
+function openNewTaskModal(){
+  const employees = DB.employees.filter(e=>e.status==="active");
+  const weekdays = [["MO","Mon"],["TU","Tue"],["WE","Wed"],["TH","Thu"],["FR","Fri"],["SA","Sat"],["SU","Sun"]];
+  const todayISO = new Date().toISOString().slice(0,10);
+  openModal(`
+    <h3>New task</h3>
+    <form id="taskForm">
+      <div class="field"><label>Title</label><input name="title" required></div>
+      <div class="field"><label>Employee</label><select name="employeeId">${employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join("")}</select></div>
+      <div class="field"><label>School</label><input name="schoolName" required></div>
+      <div class="field"><label>Repeats</label>
+        <select name="frequency" id="taskFrequency">
+          <option value="once">Just once</option>
+          <option value="daily">Daily, for a number of days</option>
+          <option value="weekly">Weekly, on specific days</option>
+        </select>
+      </div>
+
+      <div id="freqOnce" class="freq-block">
+        <div class="field"><label>Date</label><input type="date" name="date" value="${todayISO}"></div>
+      </div>
+
+      <div id="freqDaily" class="freq-block" style="display:none;">
+        <div class="grid grid-2">
+          <div class="field"><label>Start date</label><input type="date" name="dailyStart" value="${todayISO}"></div>
+          <div class="field"><label>Number of days</label><input type="number" name="dailyCount" min="1" max="60" value="5"></div>
+        </div>
+        <p class="help-note">Creates one task per day, starting from the date above.</p>
+      </div>
+
+      <div id="freqWeekly" class="freq-block" style="display:none;">
+        <div class="field">
+          <label>Days of the week</label>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            ${weekdays.map(([val,label])=>`
+              <label style="display:flex; align-items:center; gap:5px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-size:12px; text-transform:none; letter-spacing:0; color:var(--text); margin:0;">
+                <input type="checkbox" name="weeklyDays" value="${val}" style="width:auto;"> ${label}
+              </label>`).join("")}
+          </div>
+        </div>
+        <div class="grid grid-2">
+          <div class="field"><label>Start date</label><input type="date" name="weeklyStart" value="${todayISO}"></div>
+          <div class="field"><label>Number of weeks</label><input type="number" name="weeklyCount" min="1" max="12" value="1"></div>
+        </div>
+        <p class="help-note">Creates one task on each checked weekday, for the number of weeks above.</p>
+      </div>
+
+      <div class="field"><label>Priority</label><select name="priority"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></div>
+      <div class="field"><label>Instructions</label><textarea name="instructions" rows="2"></textarea></div>
+      <div class="modal-foot"><button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-solid">Create task</button></div>
+    </form>`);
+
+  const freqSel = document.getElementById("taskFrequency");
+  freqSel.addEventListener("change", ()=>{
+    document.getElementById("freqOnce").style.display = freqSel.value==="once" ? "block" : "none";
+    document.getElementById("freqDaily").style.display = freqSel.value==="daily" ? "block" : "none";
+    document.getElementById("freqWeekly").style.display = freqSel.value==="weekly" ? "block" : "none";
+  });
+
+  document.getElementById("taskForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const d = Object.fromEntries(fd);
+    const freq = d.frequency;
+    let dates = [];
+
+    if(freq === "once"){
+      if(!d.date){ toast("Pick a date."); return; }
+      dates = [d.date];
+    } else if(freq === "daily"){
+      const start = new Date(d.dailyStart + "T00:00:00");
+      const count = Math.max(1, Math.min(60, Number(d.dailyCount) || 1));
+      for(let i=0;i<count;i++){
+        const dt = new Date(start); dt.setDate(dt.getDate()+i);
+        dates.push(dt.toISOString().slice(0,10));
+      }
+    } else if(freq === "weekly"){
+      const checked = fd.getAll("weeklyDays");
+      if(!checked.length){ toast("Pick at least one day of the week."); return; }
+      const dayMap = {SU:0, MO:1, TU:2, WE:3, TH:4, FR:5, SA:6};
+      const start = new Date(d.weeklyStart + "T00:00:00");
+      const weeks = Math.max(1, Math.min(12, Number(d.weeklyCount) || 1));
+      const totalDays = weeks * 7;
+      for(let i=0;i<totalDays;i++){
+        const dt = new Date(start); dt.setDate(dt.getDate()+i);
+        const code = Object.keys(dayMap).find(k=>dayMap[k]===dt.getDay());
+        if(checked.includes(code)) dates.push(dt.toISOString().slice(0,10));
+      }
+    }
+
+    if(!dates.length){ toast("No valid dates to schedule."); return; }
+    const count = await api.createTasks(d, dates);
+    closeModal();
+    toast(count>1 ? `${count} tasks created.` : "Task created.");
+    render();
+  });
+}
+function openNewResourceModal(){
+  const employees = DB.employees.filter(e=>e.status==="active");
+  openModal(`
+    <h3>Upload resource</h3>
+    <div class="notice notice-info">Demo storage only (browser, small files). Production needs real file storage — see code notes.</div>
+    <form id="resForm">
+      <div class="field"><label>File (optional, demo storage, &lt;300KB)</label><input type="file" name="file"></div>
+      <div class="field"><label>File name (auto-filled if uploaded)</label><input name="fileName" placeholder="e.g. Python_Week2.pdf"></div>
+      <div class="field"><label>Description</label><textarea name="description" rows="2"></textarea></div>
+      <div class="field"><label>Share with</label>
+        <select name="accessType" id="accessTypeSel">
+          <option value="general">All active employees</option>
+          <option value="employee">Specific employee</option>
+        </select>
+      </div>
+      <div class="field" id="accessTargetField"><label>Employee</label><select name="accessTarget">${employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join("")}</select></div>
+      <div class="modal-foot"><button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-solid">Upload</button></div>
+    </form>`);
+  const sel = document.getElementById("accessTypeSel");
+  const targetField = document.getElementById("accessTargetField");
+  sel.addEventListener("change", ()=>{ targetField.style.display = sel.value==="employee" ? "block" : "none"; });
+  document.getElementById("resForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const form = e.target;
+    const fd = new FormData(form);
+    const file = fd.get("file");
+    const finish = async (dataUrl, type)=>{
+      const fileName = fd.get("fileName") || (file && file.name) || "Untitled file";
+      await api.uploadResource({ fileName, fileType: type||"", description: fd.get("description"), accessType: fd.get("accessType"), accessTarget: fd.get("accessType")==="employee" ? fd.get("accessTarget") : null, dataUrl });
+      closeModal(); toast("Resource uploaded."); render();
+    };
+    if(file && file.size){
+      if(file.size > 300*1024){ toast("Demo storage limit is 300KB — use a smaller file or just record the file name."); return; }
+      const reader = new FileReader();
+      reader.onload = ()=> finish(reader.result, file.type);
+      reader.readAsDataURL(file);
+    } else {
+      finish(null, "");
+    }
+  });
+}
+function openCompleteTaskModal(taskId){
+  openModal(`
+    <h3>Mark task complete</h3>
+    <form id="completeForm">
+      <div class="field"><label>Completion note (optional)</label><textarea name="note" rows="3"></textarea></div>
+      <div class="modal-foot"><button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-solid">Mark complete</button></div>
+    </form>`);
+  document.getElementById("completeForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const note = new FormData(e.target).get("note");
+    await api.updateTaskStatus(taskId, "completed", note);
+    closeModal(); toast("Task marked complete."); render();
+  });
+}
+window.closeModal = closeModal;
+</script>
+</body>
+</html>
